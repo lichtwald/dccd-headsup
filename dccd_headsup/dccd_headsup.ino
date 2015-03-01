@@ -12,21 +12,32 @@
 
 //Analog pins are numbered differently than the board shows
 //Analog Pin 1 is Digital Pin 2 is Analog Pin 1
-#define A0 1
 //Analog Pin 2 is Digital Pin 4
-#define A1 2
 //Analog Pin 3 is Digital Pin 3
+#define A0 2
+#define A1 3
+
 
 //Thresold for considering high vs low
 //Typically AVR uses 3V
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(32, PIN);
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(16, PIN);
 
 uint32_t color  = 0xFF0000; // Start red
 uint32_t prevTime;
 
 unsigned long time1;
 unsigned long time2;
+
+uint32_t getPowerColor(int level)
+{
+  uint8_t r = (uint8_t)(((level+0.0)/100.0)*255);
+  uint8_t g = (uint8_t)(((100-level+0.0)/100.0)*255);
+  uint8_t b = (uint8_t)(((level+0.0)/0.0)*255);
+  uint32_t c = strip.Color(r,g,b);
+  
+  return c;
+}
 
 void setup() {
 #ifdef __AVR_ATtiny85__ // Trinket, Gemma, etc.
@@ -40,8 +51,19 @@ void setup() {
 void oc(){
   //Opening Ceremony
   
-  //Set Color
-  color = 0xFF0000;
+	for (int level = 0; level <= 100; level += 1)
+	{
+		for (int i=0; i < pixels.numPixels(); i+=1) {
+		pixels.setPixelColor(i, 0);        //turn every third pixel off
+		}
+		for(uint16_t i=0; i<((strip.numPixels()*(level/100.0))/2); i++) {
+			pixels.setPixelColor(i, getPowerColor(level));
+			pixels.setPixelColor(pixels.numPixels() - i, getPowerColor(level));
+		}
+		pixels.show();
+		delay(50);
+	}
+	delay (100);
   
   uint8_t  i;
   
